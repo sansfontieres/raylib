@@ -160,6 +160,9 @@ pub fn addRaylib(b: *std.Build, target: anytype, optimize: std.builtin.OptimizeM
             raylib.linkFramework("CoreGraphics");
             raylib.linkFramework("AppKit");
             raylib.linkFramework("IOKit");
+            raylib.addSystemFrameworkPath(.{ .path = sdkPath("/Frameworks") });
+            raylib.addSystemIncludePath(.{ .path = sdkPath("/include") });
+            raylib.addLibraryPath(.{ .path = sdkPath("/lib") });
 
             raylib.defineCMacro("PLATFORM_DESKTOP", null);
         },
@@ -257,4 +260,12 @@ fn addCSourceFilesVersioned(exe: *std.Build.Step.Compile, files: []const []const
     } else {
         exe.addCSourceFiles(files, flags);
     }
+}
+
+fn sdkPath(comptime suffix: []const u8) []const u8 {
+    if (suffix[0] != '/') @compileError("suffix must be an absolute path");
+    return comptime blk: {
+        const root_dir = std.fs.path.dirname(@src().file) orelse ".";
+        break :blk root_dir ++ suffix;
+    };
 }
